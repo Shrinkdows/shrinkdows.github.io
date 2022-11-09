@@ -20,24 +20,40 @@ function dragElement(elmnt) {
   let placeholderElem = document.createElement('div');
   placeholderElem.style.width = elmnt.offsetWidth;
   placeholderElem.style.height = elmnt.offsetHeight;
-  placeholderElem.style.display = 'none';
+  placeholderElem.style.display = 'block';
   let elem_old_pos = {};
   elem_old_pos.width = elmnt.offsetWidth;
   elem_old_pos.height = elmnt.offsetHeight;
   elem_old_pos.left = elmnt.getBoundingClientRect().left;
   elem_old_pos.top = elmnt.getBoundingClientRect().top;
-  let insetedPlaceholder = false;
+  elmnt.style.left = elem_old_pos.left;
+  elmnt.style.top = elem_old_pos.top;
+  elmnt.style.position = 'absolute';
+  elmnt.insertAdjacentElement('beforebegin', placeholderElem)
+  let element_locked = true;
+
+  window.addEventListener('resize',()=>{
+    var old_elem_status = elmnt.style.position;
+    elmnt.style.position = 'static';
+    var old_placeholder_status = placeholderElem.style.display;
+    placeholderElem.style.display = 'none';
+    placeholderElem.style.width = elmnt.offsetWidth;
+    placeholderElem.style.height = elmnt.offsetHeight;
+    elem_old_pos.width = elmnt.offsetWidth;
+    elem_old_pos.height = elmnt.offsetHeight;
+    elem_old_pos.left = elmnt.getBoundingClientRect().left;
+    elem_old_pos.top = elmnt.getBoundingClientRect().top;
+    elmnt.style.position = old_elem_status;
+    placeholderElem.style.display = old_placeholder_status;
+    if (element_locked) {
+      elmnt.style.left = elem_old_pos.left;
+      elmnt.style.top = elem_old_pos.top;
+    }
+  })
 
   function dragMouseDown(e) {
     e = e || window.event;
     e.preventDefault();
-    elmnt.style.left = elmnt.getBoundingClientRect().left;
-    elmnt.style.top = elmnt.getBoundingClientRect().top;
-    elmnt.style.position = 'absolute';
-    if (!insetedPlaceholder) {
-      elmnt.insertAdjacentElement('beforebegin', placeholderElem);
-      insetedPlaceholder = true;
-    }
     // get the mouse cursor position at startup:
     pos3 = e.clientX;
     pos4 = e.clientY;
@@ -80,8 +96,11 @@ function dragElement(elmnt) {
         ((elem_old_pos.top + elem_old_pos.height) > elmnt.getBoundingClientRect().top) &&
         ((elmnt.getBoundingClientRect().top + elmnt.offsetHeight) > elem_old_pos.top)
       ) {
+      element_locked = true;
       elmnt.style.left = elem_old_pos.left;
       elmnt.style.top = elem_old_pos.top;
+    } else {
+      element_locked = false;
     }
   }
 }
